@@ -1,4 +1,6 @@
+import { Op } from 'sequelize';
 import Event from './entities/event.entity';
+import Workshop from './entities/workshop.entity';
 
 
 export class EventsService {
@@ -85,7 +87,20 @@ export class EventsService {
      */
 
   async getEventsWithWorkshops() {
-    throw new Error('TODO task 1');
+    Event.hasMany(Workshop, { as: "workshops" });
+    Workshop.belongsTo(Event, { targetKey: "id", foreignKey: "eventId" });
+
+    const events = await Event.findAll({
+      include: [
+        {
+          model: Workshop,
+          as: "workshops",
+        },
+      ],
+      order: [["workshops", "id", "ASC"]],
+    });
+
+    return events;
   }
 
   /* TODO: complete getFutureEventWithWorkshops so that it returns events with workshops, that have not yet started
@@ -155,6 +170,22 @@ export class EventsService {
     ```
      */
   async getFutureEventWithWorkshops() {
-    throw new Error('TODO task 2');
+    Event.hasMany(Workshop);
+    Workshop.belongsTo(Event, { targetKey: "id", foreignKey: "eventId" });
+
+    const futuereEvents = await Event.findAll({
+      include: [
+        {
+          model: Workshop,
+          as: "workshops",
+          where: {
+            start: { [Op.gte]: new Date() },
+          },
+        },
+      ],
+      order: [[{ model: Workshop, as: "workshops" }, "id", "ASC"]],
+    });
+
+    return futuereEvents;
   }
 }

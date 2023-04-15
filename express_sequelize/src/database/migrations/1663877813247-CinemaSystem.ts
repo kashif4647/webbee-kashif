@@ -1,4 +1,4 @@
-import { QueryInterface } from 'sequelize';
+import { DataTypes, QueryInterface } from 'sequelize';
 
 export default {
   /**
@@ -31,12 +31,214 @@ export default {
    * As a cinema owner I don't want to configure the seating for every show
    */
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  up: (queryInterface: QueryInterface): Promise<void> => {
-    throw new Error('TODO: implement migration in task 4');
+  up: async (queryInterface: QueryInterface): Promise<void> => {
+    await queryInterface.createTable('Movies', {
+      id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true,
+      },
+      title: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      description: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      createdAt: {
+        allowNull: false,
+        type: DataTypes.DATE,
+        defaultValue: new Date(),
+      },
+      updatedAt: {
+        allowNull: false,
+        type: DataTypes.DATE,
+        defaultValue: new Date(),
+      },
+    });
+
+    await queryInterface.createTable('Cinemas', {
+      id: {
+        allowNull: false,
+        primaryKey: true,
+        type: DataTypes.UUID,
+        defaultValue: DataTypes.UUIDV4,
+      },
+      name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      address: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      createdAt: {
+        allowNull: false,
+        type: DataTypes.DATE,
+        defaultValue: new Date(),
+      },
+      updatedAt: {
+        allowNull: false,
+        type: DataTypes.DATE,
+        defaultValue: new Date(),
+      },
+    });
+
+    await queryInterface.createTable('ShowRooms', {
+      id: {
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true,
+        type: DataTypes.INTEGER
+      },
+      name: {
+        allowNull: false,
+        type: DataTypes.STRING
+      },
+      capacity: {
+        allowNull: false,
+        type: DataTypes.INTEGER
+      },
+      createdAt: {
+        allowNull: false,
+        type: DataTypes.DATE
+      },
+      updatedAt: {
+        allowNull: false,
+        type: DataTypes.DATE
+      }
+    });
+
+    await queryInterface.createTable('SeatTypes', {
+      id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true,
+      },
+      name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+      },
+      premium: {
+        type: DataTypes.DECIMAL,
+        allowNull: false,
+      },
+      createdAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+      },
+      updatedAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+      },
+    });
+
+    await queryInterface.createTable('Pricing', {
+      id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true,
+      },
+      price: {
+        type: DataTypes.DECIMAL,
+        allowNull: false,
+      },
+      showId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'Shows',
+          key: 'id',
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
+      },
+      seatTypeId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'SeatTypes',
+          key: 'id',
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
+      },
+      createdAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+      },
+      updatedAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+      },
+    });
+
+    await queryInterface.createTable('Shows', {
+      id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true,
+      },
+      start_time: {
+        type: DataTypes.DATE,
+        allowNull: false,
+      },
+      end_time: {
+        type: DataTypes.DATE,
+        allowNull: false,
+      },
+      booked_seats: {
+        type: DataTypes.ARRAY(DataTypes.INTEGER),
+        defaultValue: [],
+      },
+      cinema_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'Cinemas',
+          key: 'id',
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
+      },
+      movie_id: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+          model: 'Movies',
+          key: 'id',
+        },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE',
+      },
+      price: {
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+      },
+      created_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: new Date(),
+      },
+      updated_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: new Date(),
+      },
+    });
   },
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  down: (queryInterface: QueryInterface) => {
-    // do nothing
+  down: async (queryInterface: QueryInterface) => {
+    await queryInterface.dropTable('Movies');
+    await queryInterface.dropTable('Cinemas');
+    await queryInterface.dropTable('ShowRooms');
+    await queryInterface.dropTable('SeatTypes');
+    await queryInterface.dropTable('Pricing');
+    await queryInterface.dropTable('Shows');
   },
 };
